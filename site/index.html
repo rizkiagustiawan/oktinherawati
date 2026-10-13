@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEFL-Like Listening Part A — Conversational Implicature</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ SCREEN: FORM ============ -->
+<section id="scr-form" class="screen active">
+  <div class="card">
+    <div class="badge">Section 1 · Listening Comprehension · Part A</div>
+    <h1>TOEFL-Like Listening Comprehension</h1>
+    <p class="sub">Conversational Implicature — 30 Short Conversations<br>English Education Program, University of Mataram</p>
+
+    <div class="rules">
+      <h3>Test Rules</h3>
+      <ol>
+        <li>Use <b>headphones</b> in a quiet place.</li>
+        <li>Each conversation and question is played <b>only once</b> — like the real TOEFL.</li>
+        <li>You have <b>30 seconds</b> to answer each question. The test moves on automatically.</li>
+        <li>You <b>cannot go back</b> to previous questions.</li>
+        <li>Keep the test in <b>fullscreen</b>. Switching tabs is recorded.</li>
+        <li>Choose the best answer (A, B, C, or D) for each question.</li>
+      </ol>
+    </div>
+
+    <form id="regForm" autocomplete="off">
+      <label>Full Name
+        <input type="text" id="fName" required placeholder="Your full name" minlength="3">
+      </label>
+      <label>Active WhatsApp Number
+        <input type="tel" id="fWa" required placeholder="08xxxxxxxxxx" inputmode="numeric">
+      </label>
+      <label>Semester
+        <select id="fSem" required>
+          <option value="">— select —</option>
+          <option value="4">4</option><option value="5">5</option>
+          <option value="6">6</option><option value="7">7</option>
+        </select>
+      </label>
+      <div class="consent">
+        <label class="chk"><input type="checkbox" id="fConsent" required>
+          I agree to participate in this research. My identity is kept confidential and used for academic purposes only.</label>
+      </div>
+      <button type="submit" class="btn primary big">Start Test ▶</button>
+      <p id="formErr" class="err"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ SCREEN: LOCKED ============ -->
+<section id="scr-locked" class="screen">
+  <div class="card center">
+    <h1>🔒 Already Taken</h1>
+    <p>This WhatsApp number has already completed the test.<br>One attempt per participant (anti-cheat policy).</p>
+    <p class="muted">If this is a mistake, contact the researcher (Oktin Herawati).</p>
+  </div>
+</section>
+
+<!-- ============ SCREEN: TEST ============ -->
+<section id="scr-test" class="screen">
+  <div class="testbar">
+    <span id="tProgress">Soal 1/30</span>
+    <span id="tTimer" class="timer">30s</span>
+    <span id="tViol" class="viol" title="Tab switches detected">⚠ 0</span>
+  </div>
+  <div class="card test">
+    <div class="stage" id="stage-play">
+      <div class="itemtag" id="itemTag">Complex · Implicature</div>
+      <h2 id="itemNum">Number 1</h2>
+      <p class="hint">🎧 Listen carefully. The audio will play <b>only once</b>.</p>
+      <button class="btn primary big" id="btnPlay">▶ Play Audio</button>
+    </div>
+    <div class="stage hidden" id="stage-ans">
+      <p class="question" id="qText">Question</p>
+      <div id="opts"></div>
+      <p class="countdown" id="countdown">30</p>
+      <p class="hint small">The next question starts automatically when time runs out.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN: QUESTIONNAIRE ============ -->
+<section id="scr-quest" class="screen">
+  <div class="card">
+    <div class="badge">Post-Test Questionnaire</div>
+    <h2>Persepsi Kesulitan</h2>
+    <p class="sub muted">Jawaban jujur membantu penelitian. Tidak mempengaruhi skor Anda.</p>
+    <form id="questForm">
+      <div id="likertWrap"></div>
+      <div id="mcWrap"></div>
+      <button type="submit" class="btn primary big">Kirim & Lihat Skor ✅</button>
+      <p id="questErr" class="err"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ SCREEN: SCORE ============ -->
+<section id="scr-score" class="screen">
+  <div class="card">
+    <h2>📊 Hasil Tes Anda</h2>
+    <div class="score-hero">
+      <div class="score-big" id="scoreTotal">0/30</div>
+      <div class="score-pct" id="scorePct">0%</div>
+    </div>
+    <div class="grid2">
+      <div class="stat"><h4>Simple Sentences</h4><p id="stSimple">—</p></div>
+      <div class="stat"><h4>Complex Sentences</h4><p id="stComplex">—</p></div>
+      <div class="stat"><h4>Deixis Items</h4><p id="stDeixis">—</p></div>
+      <div class="stat"><h4>Reference Items</h4><p id="stRef">—</p></div>
+    </div>
+    <div class="meta">
+      <p><b>Nama:</b> <span id="rName"></span></p>
+      <p><b>Semester:</b> <span id="rSem"></span></p>
+      <p><b>Durasi:</b> <span id="rDur"></span> · <b>Peringatan integritas:</b> <span id="rViol"></span></p>
+      <p><b>Status pengiriman data:</b> <span id="rSubmit" class="muted">…</span></p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnCopy">📋 Salin Hasil</button>
+      <a class="btn hidden" id="btnWa" target="_blank" rel="noopener">📲 Kirim via WhatsApp</a>
+      <button class="btn ghost" id="btnRetry">🔁 Kirim Ulang</button>
+    </div>
+    <p class="muted small">Terima kasih telah berpartisipasi. Hasil ini digunakan hanya untuk keperluan akademik.</p>
+  </div>
+</section>
+
+<div id="fsOverlay" class="fs-overlay hidden">
+  <div><h2>⚠ Kembali ke Fullscreen</h2><p>Tes harus dijalankan dalam mode layar penuh.</p>
+  <button class="btn primary" id="btnFsBack">Kembali ke Tes</button></div>
+</div>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,6 +1,16 @@
 # SETUP — Aktivasi Tes (10 menit, sekali saja)
 
-## 1. Aktifkan Google Sheets (backend data, tanpa SQL)
+## 1. Backend Google Sheets — SUDAH AKTIF ✅ (14 Okt 2026)
+
+- Web App URL sudah terpasang di `site/config.js`.
+- Sheet data kanonik: **"OKTIN Listening Responses"** (tab `Responses` + `Items`).
+- Sudah lolos tes end-to-end (POST simulasi siswa → data masuk, dedup WA aktif).
+- Untuk deploy ulang backend di masa depan: edit `apps-script/Code.gs`, push via
+  `gws script +push`, buat version baru, lalu **Deploy → Manage deployments → edit → versi baru**.
+
+---
+
+## 1b. (ARSIP) Aktivasi manual — tidak diperlukan lagi
 
 1. Buka **https://script.google.com** (login akun Google Oktin/peneliti).
 2. **New project** → hapus isi `Code.gs` → tempel seluruh isi file `Code.gs` dari repo ini.

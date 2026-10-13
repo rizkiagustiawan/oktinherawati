@@ -22,13 +22,34 @@ function setup() {
     "q_likert_1to5", "q_factors", "q_hardest",
     "user_agent", "test_version"
   ]);
+  // standalone script (via API) tidak punya active spreadsheet — simpan ID-nya
+  PropertiesService.getScriptProperties().setProperty("RESPONSE_SS_ID", ss.getId());
   Logger.log("Sheet dibuat: " + ss.getUrl());
 }
+
+// init otomatis saat POST pertama (tanpa setup manual)
+function setupSilent() {
+  const ss = SpreadsheetApp.create("OKTIN Listening Responses");
+  ss.getSheets()[0].appendRow([
+    "timestamp", "nama", "wa", "semester", "total", "percent",
+    "simple", "complex", "deixis", "reference",
+    "duration_sec", "violations", "violation_log",
+    "q_likert_1to5", "q_factors", "q_hardest",
+    "user_agent", "test_version"
+  ]);
+  PropertiesService.getScriptProperties().setProperty("RESPONSE_SS_ID", ss.getId());
+  return ss.getId();
+}
+
+// Sheet Responses kanonik (dibuat via setup() 14 Okt 2026). Backend menulis ke sini.
+const FIXED_RESPONSE_SS_ID = "1W76EM2cWeuHcbBflGGgYry8gkqW8oT1HS08H8xhuLQs";
 
 function doPost(e) {
   try {
     const d = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let ssId = PropertiesService.getScriptProperties().getProperty("RESPONSE_SS_ID") || FIXED_RESPONSE_SS_ID;
+    if (!ssId) ssId = setupSilent();
+    const ss = SpreadsheetApp.openById(ssId);
     let sh = ss.getSheetByName("Responses") || ss.insertSheet("Responses");
     if (sh.getLastRow() === 0) {
       sh.appendRow([

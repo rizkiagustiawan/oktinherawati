@@ -48,6 +48,8 @@ class Range {
     this.sheet.setColFormatRows(this.col, kind, this.row, this.row + this.nRows - 1);
     return this;
   }
+  setFontWeight() { return this; }
+  setFontSize() { return this; }
 }
 
 class Sheet {
@@ -105,6 +107,7 @@ class Sheet {
     return this;
   }
   getColumnWidth() { return 100; }
+  clear() { this.cells.clear(); return this; }
 }
 
 class Spreadsheet {

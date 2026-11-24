@@ -169,6 +169,113 @@ function doPost(e) {
   }
 }
 
+// ================= REKAP ANALISIS (untuk grafik) =================
+// Jalankan fungsi ini dari editor Apps Script setelah data terkumpul:
+//   Run -> buatRekap
+// Hasil: sheet "Rekap" berisi 3 blok siap untuk Insert -> Chart:
+//   A. Ringkasan per peserta
+//   B. Analisis per item (35) -> pilih kolom % Salah untuk bar chart
+//   C. Statistik ringkas (rata-rata simple vs compound, item tersulit)
+function buatRekap() {
+  var ssId = PropertiesService.getScriptProperties().getProperty("RESPONSE_SS_ID");
+  if (!ssId) throw new Error("BELUM ADA DATA: jalankan setup() atau tunggu submit pertama.");
+  var ss = SpreadsheetApp.openById(ssId);
+  var sh = ss.getSheetByName("Responses");
+  if (!sh) throw new Error("Sheet Responses belum ada. Tunggu peserta pertama submit.");
+
+  var n = sh.getLastRow();
+  if (n < 2) throw new Error("Belum ada peserta di sheet Responses.");
+
+  var rows = sh.getRange(2, 1, n - 1, sh.getLastColumn()).getValues();
+
+  var byItem = {}; // id -> {type, benar, total}
+  var peserta = [];
+  var skor = [];
+
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[1] && !r[2]) continue; // baris kosong
+    var arr = [];
+    try { arr = JSON.parse(r[29] || "[]") || []; } catch (e) { arr = []; }
+    var bSimple = 0, tSimple = 0, bComp = 0, tComp = 0;
+    for (var j = 0; j < arr.length; j++) {
+      var it = arr[j] || {};
+      var iid = it.i, type = it.t, ok = it.k === 1;
+      if (iid == null) continue;
+      if (!byItem[iid]) byItem[iid] = { type: type, benar: 0, total: 0 };
+      byItem[iid].total++;
+      if (ok) byItem[iid].benar++;
+      if (type === "simple") { tSimple++; if (ok) bSimple++; }
+      else { tComp++; if (ok) bComp++; }
+    }
+    skor.push(r[20] != null ? Number(r[20]) : 0);
+    peserta.push([r[1], r[2], r[3], r[4], r[6], r[7],
+      r[20] != null ? r[20] : "", r[21] != null ? r[21] : "",
+      bSimple + "/" + tSimple, bComp + "/" + tComp]);
+  }
+
+  var PAD = function (n) { var a = [n]; for (var k = 1; k < 11; k++) a.push(""); return a; };
+
+  var out = [];
+  out.push(["REKAP ANALISIS - dibuat otomatis oleh buatRekap() - " + new Date().toISOString().slice(0, 10)]);
+  out.push([]);
+
+  // ---- Blok A: per peserta ----
+  out.push(["A. Ringkasan per Peserta"]);
+  out.push(["No", "Nama", "WA", "Semester", "TOEFL", "Section Tinggi", "Section Rendah",
+    "Skor", "%", "Simple (benar/total)", "Compound (benar/total)"]);
+  for (var p = 0; p < peserta.length; p++) {
+    var line = [p + 1].concat(peserta[p]);
+    while (line.length < 11) line.push("");
+    out.push(line);
+  }
+  out.push([]);
+
+  // ---- Blok B: per item (siap grafik) ----
+  out.push(["B. Analisis per Item (35) - pilih kolom '% Salah' untuk bar chart"]);
+  out.push(["No Item", "Tipe Kalimat", "Jumlah Peserta", "Benar", "% Benar", "% Salah/Error"]);
+  var keys = Object.keys(byItem).map(Number).sort(function (a, b) { return a - b; });
+  var itemStat = [];
+  for (var k = 0; k < keys.length; k++) {
+    var it = byItem[keys[k]];
+    var pct = it.total ? Math.round((it.benar / it.total) * 100) : 0;
+    out.push([keys[k], it.type, it.total, it.benar, pct, 100 - pct]);
+    itemStat.push({ id: keys[k], type: it.type, err: 100 - pct });
+  }
+  out.push([]);
+
+  // ---- Blok C: statistik ringkas ----
+  out.push(["C. Statistik Ringkas"]);
+  out.push(["Jumlah peserta", peserta.length]);
+  if (skor.length) {
+    var sum = 0, mn = skor[0], mx = skor[0];
+    for (var s = 0; s < skor.length; s++) { sum += skor[s]; if (skor[s] < mn) mn = skor[s]; if (skor[s] > mx) mx = skor[s]; }
+    out.push(["Rata-rata skor (dari 35)", Math.round((sum / skor.length) * 10) / 10]);
+    out.push(["Skor terendah", mn]);
+    out.push(["Skor tertinggi", mx]);
+  }
+  // error terbesar per item
+  itemStat.sort(function (a, b) { return b.err - a.err; });
+  out.push(["3 item tersulit (error tertinggi)"]);
+  for (var q = 0; q < Math.min(3, itemStat.length); q++) {
+    out.push(["  #" + itemStat[q].id + " (" + itemStat[q].type + ")", itemStat[q].err + "% salah"]);
+  }
+
+  var rakap = ss.getSheetByName("Rekap") || ss.insertSheet("Rekap");
+  rakap.clear();
+  var maxCols = 11;
+  for (var rowIdx = 0; rowIdx < out.length; rowIdx++) {
+    var rr = out[rowIdx];
+    while (rr.length < maxCols) rr.push("");
+  }
+  rakap.getRange(1, 1, out.length, maxCols).setValues(out);
+  rakap.getRange(1, 1, 1, maxCols).setFontWeight("bold");
+  rakap.getRange(1, 1).setFontSize(12);
+}
+
+// alias bahasa Inggris
+function makeSummary() { buatRekap(); }
+
 function doGet() { return jsonOut({ ok: true, service: "oktin-listening", time: new Date() }); }
 
 function jsonOut(obj) {

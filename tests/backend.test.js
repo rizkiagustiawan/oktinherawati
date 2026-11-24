@@ -229,6 +229,40 @@ test("header skema lama (complex/deixis/q_*) dimigrasi otomatis ke v3", () => {
   assert.equal(sh.getLastRow(), 3, "baris lama tetap ada + 1 baru");
 });
 
+test("buatRekap menghasilkan sheet Rekap ringkas siap grafik", () => {
+  const h = fresh();
+  h.post(payload());
+  h.post(payload({ wa: "081200000002" }));
+  h.sandbox.buatRekap();
+
+  const rk = h.sheet(SS_ID, "Rekap");
+  assert.ok(rk, "sheet Rekap harus dibuat");
+  const title = rk.getRange(1, 1).getValues()[0][0];
+  assert.match(String(title), /REKAP ANALISIS/);
+
+  // blok B: item 1..35 -> baris 10..44 (2 peserta)
+  const item1 = rk.getRange(10, 1, 1, 6).getValues()[0];
+  assert.equal(item1[0], 1, "item pertama id=1");
+  assert.equal(item1[1], "compound", "item1 = compound");
+  assert.equal(item1[2], 2, "diikuti 2 peserta");
+  assert.equal(item1[3], 2, "keduanya benar");
+  assert.equal(item1[5], 0, "0% salah");
+
+  const item35 = rk.getRange(44, 1, 1, 6).getValues()[0];
+  assert.equal(item35[0], 35, "item terakhir id=35");
+  assert.equal(item35[1], "simple", "item35 = simple");
+
+  // blok C: statistik ringkas
+  const all = rk.getRange(1, 1, 80, 2).getValues().map((r) => r[0]);
+  assert.ok(all.some((v) => String(v).indexOf("C. Statistik Ringkas") === 0), "statistik ringkas ada");
+  assert.ok(all.some((v) => String(v).indexOf("Rata-rata skor") === 0), "rata-rata skor ada");
+});
+
+test("buatRekap aman saat belum ada peserta", () => {
+  const h = fresh();
+  assert.throws(() => h.sandbox.buatRekap(), /Belum ada peserta/);
+});
+
 test("100 submit berurutan semuanya masuk (tidak ada yang hilang)", () => {
   const h = fresh();
   for (let i = 0; i < 100; i++) {

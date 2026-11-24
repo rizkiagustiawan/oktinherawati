@@ -18,8 +18,11 @@ h2{font-size:1.25rem;margin-bottom:8px}
 .rules h3{font-size:.95rem;margin-bottom:8px;color:#9fc1ff}
 .rules li{font-size:.88rem;color:#c3cde3;margin:5px 0 5px 18px}
 label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 5px}
-input,select{width:100%;padding:11px 13px;background:#101828;border:1px solid #2c3a5e;border-radius:9px;color:var(--ink);font-size:.95rem}
-input:focus,select:focus{outline:none;border-color:var(--accent)}
+input,select,textarea{width:100%;padding:11px 13px;background:#101828;border:1px solid #2c3a5e;border-radius:9px;color:var(--ink);font-size:.95rem;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{min-height:72px;resize:vertical;line-height:1.45}
+.qn-bg{background:var(--card2);border-radius:10px;padding:14px 16px;margin:14px 0;border:1px solid #26314d}
+.qn-bg h3{font-size:.9rem;color:#9fc1ff;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
 .chk{display:flex;gap:9px;align-items:flex-start;font-size:.8rem;color:#a8b3c9}
 .chk input{width:auto;margin-top:3px}
 .btn{display:inline-block;border:none;border-radius:10px;padding:11px 20px;font-size:.95rem;font-weight:600;cursor:pointer;color:var(--ink);background:#2a3655;text-decoration:none}

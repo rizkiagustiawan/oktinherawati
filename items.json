@@ -812,5 +812,27 @@
       "key": "Her topic is not approved yet."
     }
   ],
-  "questionnaire": null
+  "questionnaire": {
+    "title": "Post-Test Questionnaire",
+    "subtitle": "This questionnaire is part of the research instrument. There are no right or wrong answers. Your answers are confidential and used for academic purposes only.",
+    "scale": ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
+    "sections": ["Listening", "Structure & Written Expression", "Reading"],
+    "toeflTypes": ["ITP / Paper-Based Test (PBT)", "iBT (Internet-Based Test)", "Never taken"],
+    "items": [
+      "I find it difficult to catch words spoken at normal speed.",
+      "The British accent in the audio makes me mishear some words.",
+      "Because the audio is played only once, I cannot catch all the words.",
+      "Compound sentences are more difficult for me to understand than simple sentences.",
+      "Conjunctions such as but, so, or, and for confuse me.",
+      "Long sentences make me forget the beginning of the conversation.",
+      "I find it difficult to find the implied meaning of the speaker's utterance.",
+      "I find it difficult to connect the first and second speakers' utterances.",
+      "I often guess the answer because I am not sure what the speaker means.",
+      "Thirty seconds is not enough time for me to answer."
+    ],
+    "openEnded": [
+      "In your opinion, which sentence type is more difficult to understand the implied meaning of: simple sentences, compound sentences, or both? Please explain your reasons.",
+      "Please write any suggestions so that a TOEFL-Like Listening Part A test like this one becomes easier to understand."
+    ]
+  }
 }

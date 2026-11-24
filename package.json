@@ -1,0 +1,13 @@
+{
+  "name": "oktin-listening",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TOEFL-Like Listening Part A \u2014 Conversational Implicature (instrumen skripsi)",
+  "scripts": {
+    "test": "node --test tests/",
+    "test:flow": "node --test tests/e2e-flow.test.js",
+    "test:backend": "node --test tests/backend.test.js",
+    "test:integration": "node --test tests/integration.test.js",
+    "test:live": "LIVE=1 node --test tests/live-sheet.test.js"
+  }
+}

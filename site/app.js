@@ -1,5 +1,5 @@
 /* TOEFL-Like Listening Part A — static test app (no SQL, no backend required)
-   Flow: form -> 30 items (audio once + 30s) -> questionnaire -> score + submit */
+   Flow: form -> 35 items (audio once + 30s) -> score + submit */
 (function () {
   "use strict";
   const D = window.TEST_DATA, C = window.APP_CONFIG;
@@ -7,7 +7,7 @@
   const state = {
     student: null, idx: 0, answers: {}, order: {}, violations: [],
     startedAt: 0, timer: null, timeLeft: 0, playing: false, audio: new Audio(),
-    submitted: false, likert: {}, mc1: [], mc2: null
+    submitted: false, qn: [], questionnaire: null
   };
 
   /* ---------- helpers ---------- */
@@ -43,7 +43,9 @@
   $("#regForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("#fName").value.trim();
-    let wa = $("#fWa").value.replace(/\D/g, "");
+    let waRaw = $("#fWa").value.replace(/\D/g, "");
+    let wa = waRaw.replace(/^62/, "0");
+    if (wa[0] !== "0") wa = "0" + wa;
     const sem = parseInt($("#fSem").value, 10);
     if (name.length < 3) return err("#formErr", "Nama minimal 3 karakter.");
     if (/^08\d{8,12}$/.test(wa) === false) return err("#formErr", "Nomor WA tidak valid (format 08xxxxxxxxxx).");
@@ -72,9 +74,9 @@
     const it = D.items[state.idx];
     clearInterval(state.timer);
     state.playing = false;
-    $("#tProgress").textContent = `Soal ${state.idx + 1}/30`;
+    $("#tProgress").textContent = `Soal ${state.idx + 1}/${D.items.length}`;
     $("#tViol").textContent = "⚠ " + state.violations.length;
-    $("#itemTag").textContent = `${it.sentence_type} sentence · ${it.question_focus}`;
+    $("#itemTag").textContent = `${it.sentence_type} sentence · implicature`;
     $("#itemNum").textContent = `Number ${state.idx + 1}`;
     $("#stage-play").classList.remove("hidden");
     $("#stage-ans").classList.add("hidden");
@@ -142,72 +144,69 @@
     renderQuestion();
   }
 
-  /* ---------- questionnaire ---------- */
+  /* ---------- end of test ---------- */
   function endTest() {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    buildQuestionnaire();
-    show("#scr-quest");
+    renderQuestionnaire();
   }
-  function buildQuestionnaire() {
-    const w = $("#likertWrap");
-    w.innerHTML = "";
-    D.questionnaire.likert.forEach((q, i) => {
+
+  /* ---------- post-test questionnaire ---------- */
+  function renderQuestionnaire() {
+    const Q = D.questionnaire;
+    if (!Q) return finishAndScore();
+    const wrap = $("#qnLikert");
+    wrap.innerHTML = "";
+    state.qn = [];
+    Q.items.forEach((text, i) => {
       const row = document.createElement("div");
-      row.className = "qrow";
-      row.innerHTML = `<p>${i + 1}. ${q}</p>`;
-      const sc = document.createElement("div");
-      sc.className = "scale";
-      for (let v = 1; v <= 5; v++) {
-        const l = document.createElement("label");
-        l.innerHTML = `<input type="radio" name="lik${i}" value="${v}" required><span class="num">${v}</span>1-${v === 5 ? 5 : ""}`.replace(`1-${v === 5 ? 5 : ""}`, "");
-        l.innerHTML = `<input type="radio" name="lik${i}" value="${v}" required><span class="num">${v}</span>`;
-        sc.appendChild(l);
-      }
-      row.appendChild(sc); w.appendChild(row);
+      row.classList.add("qrow");
+      const p = document.createElement("p");
+      p.textContent = (i + 1) + ". " + text;
+      row.appendChild(p);
+      const scale = document.createElement("div");
+      scale.classList.add("scale");
+      Q.scale.forEach((labelText, j) => {
+        const v = j + 1;
+        const label = document.createElement("label");
+        const inp = document.createElement("input");
+        inp.type = "radio";
+        inp.name = "qnLikert";
+        inp.value = String(v);
+        inp.addEventListener("click", () => { state.qn[i] = v; });
+        const num = document.createElement("span");
+        num.classList.add("num");
+        num.textContent = String(v);
+        label.appendChild(inp);
+        label.appendChild(num);
+        label.appendChild(document.createTextNode(labelText));
+        scale.appendChild(label);
+      });
+      row.appendChild(scale);
+      wrap.appendChild(row);
     });
-    const mw = $("#mcWrap");
-    mw.innerHTML = "";
-    mw.appendChild(mcBlock("mc1", D.questionnaire.mc1_question, D.questionnaire.mc1_options, true));
-    mw.appendChild(mcBlock("mc2", D.questionnaire.mc2_question, D.questionnaire.mc2_options, false));
+    show("#scr-qn");
   }
-  function mcBlock(name, q, opts, multi) {
-    const d = document.createElement("div");
-    d.className = "qrow mcq";
-    d.innerHTML = `<p>${q}</p>`;
-    opts.forEach((o) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "opt multi";
-      b.innerHTML = o;
-      b.onclick = () => {
-        if (multi) {
-          b.classList.toggle("sel");
-          const sel = Array.from(d.querySelectorAll(".sel")).map((x) => x.textContent);
-          if (sel.length > 3) { b.classList.remove("sel"); }
-        } else {
-          d.querySelectorAll(".opt").forEach((x) => x.classList.remove("sel"));
-          b.classList.add("sel");
-        }
-      };
-      d.appendChild(b);
-    });
-    d.dataset.name = name;
-    return d;
-  }
-  $("#questForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const lik = [];
-    for (let i = 0; i < D.questionnaire.likert.length; i++) {
-      const v = document.querySelector(`input[name=lik${i}]:checked`);
-      if (!v) return err("#questErr", "Jawab semua pertanyaan skala 1-5 dulu.");
-      lik.push(parseInt(v.value, 10));
-    }
-    const mc1 = Array.from(document.querySelectorAll('[data-name=mc1] .sel')).map((x) => x.textContent);
-    const mc2el = document.querySelector('[data-name=mc2] .sel');
-    if (mc1.length === 0 || !mc2el) return err("#questErr", "Jawab dua pertanyaan pilihan di bawah.");
-    state.likert = lik; state.mc1 = mc1; state.mc2 = mc2el.textContent;
+
+  function collectQuestionnaire() {
+    const score = parseInt($("#qnScore").value, 10);
+    const type = $("#qnType").value;
+    const high = $("#qnHigh").value;
+    const low = $("#qnLow").value;
+    if (!score || score < 310 || score >= 500) return err("#qnErr", "Your latest TOEFL score must be below 500 (research criterion).");
+    if (!type) return err("#qnErr", "Please select the TOEFL test type.");
+    if (!high) return err("#qnErr", "Please choose the section with your highest score.");
+    if (!low) return err("#qnErr", "Please choose the section with your lowest score.");
+    if (high === low) return err("#qnErr", "Highest and lowest sections must be different.");
+    if (!state.qn || state.qn.length !== 10 || state.qn.some((v) => !v)) return err("#qnErr", "Please answer all 10 statements.");
+    const o1 = $("#qnO1").value.trim();
+    if (o1.length < 5) return err("#qnErr", "Please answer open question 1 briefly.");
+    state.questionnaire = {
+      score, type, high, low,
+      q: state.qn.slice(),
+      o1, o2: $("#qnO2").value.trim()
+    };
     finishAndScore();
-  });
+  }
 
   /* ---------- scoring + submit ---------- */
   function finishAndScore() {
@@ -219,45 +218,45 @@
   }
 
   function computeResult() {
-    let total = 0, sSimpleC = 0, sSimpleN = 0, sCompC = 0, sCompN = 0, sDeiC = 0, sDeiN = 0, sRefC = 0, sRefN = 0;
+    let total = 0, sSimpleC = 0, sSimpleN = 0, sCompC = 0, sCompN = 0;
     const items = D.items.map((it) => {
       const chosen = state.answers[it.id] === undefined ? null : state.answers[it.id];
       const ok = chosen === it.key;
       total += ok ? 1 : 0;
       if (it.sentence_type === "simple") { sSimpleN++; if (ok) sSimpleC++; } else { sCompN++; if (ok) sCompC++; }
-      if (it.question_focus === "deixis") { sDeiN++; if (ok) sDeiC++; } else if (it.question_focus === "reference") { sRefN++; if (ok) sRefC++; }
-      return { id: it.id, type: it.sentence_type, focus: it.question_focus, chosen, correct: it.key, ok };
+      return { id: it.id, type: it.sentence_type, chosen, correct: it.key, ok };
     });
+    const qn = state.questionnaire || {};
     return {
       nama: state.student.name, wa: state.student.wa, semester: state.student.sem,
+      toefl_score: qn.score != null ? qn.score : "",
+      toefl_type: qn.type || "",
+      section_high: qn.high || "",
+      section_low: qn.low || "",
+      questionnaire: qn.q ? { q: qn.q, o1: qn.o1 || "", o2: qn.o2 || "" } : null,
       total, percent: Math.round((total / D.items.length) * 100),
       simple: `${sSimpleC}/${sSimpleN} (${fmtPct(sSimpleC, sSimpleN)})`,
-      complex: `${sCompC}/${sCompN} (${fmtPct(sCompC, sCompN)})`,
-      deixis: `${sDeiC}/${sDeiN} (${fmtPct(sDeiC, sDeiN)})`,
-      reference: `${sRefC}/${sRefN} (${fmtPct(sRefC, sRefN)})`,
+      compound: `${sCompC}/${sCompN} (${fmtPct(sCompC, sCompN)})`,
       duration_sec: Math.round((Date.now() - state.startedAt) / 1000),
       violations: state.violations.length,
       violation_log: state.violations,
       items,
-      questionnaire: { likert_1to5: state.likert, factors: state.mc1, hardest: state.mc2 },
-      meta: { ua: state.student.ua, finished_at: new Date().toISOString(), test: "TOEFL-like Part A implicature v1" }
+      meta: { ua: state.student.ua, finished_at: new Date().toISOString(), test: "TOEFL-like Part A implicature v2 (35 items)" }
     };
   }
 
   function renderScore(r) {
-    $("#scoreTotal").textContent = `${r.total}/30`;
+    $("#scoreTotal").textContent = `${r.total}/${D.items.length}`;
     $("#scorePct").textContent = r.percent + "%";
     $("#stSimple").textContent = r.simple;
-    $("#stComplex").textContent = r.complex;
-    $("#stDeixis").textContent = r.deixis;
-    $("#stRef").textContent = r.reference;
+    $("#stCompound").textContent = r.compound;
     $("#rName").textContent = r.nama;
     $("#rSem").textContent = r.semester;
     $("#rDur").textContent = Math.floor(r.duration_sec / 60) + "m " + (r.duration_sec % 60) + "s";
     $("#rViol").textContent = r.violations === 0 ? "bersih ✓" : r.violations + " kejadian (dicatat)";
     window.__LAST_RESULT = r;
     // WA fallback
-    const txt = `HASIL TOEFL-LIKE LISTENING PART A%0A%0ANama: ${encodeURIComponent(r.nama)}%0AWA: ${r.wa}%0ASemester: ${r.semester}%0A%0ASkor: ${r.total}/30 (${r.percent}%)%0ASimple: ${encodeURIComponent(r.simple)}%0AComplex: ${encodeURIComponent(r.complex)}%0ADeixis: ${encodeURIComponent(r.deixis)}%0AReference: ${encodeURIComponent(r.reference)}%0APelanggaran integritas: ${r.violations}`;
+    const txt = `HASIL TOEFL-LIKE LISTENING PART A%0A%0ANama: ${encodeURIComponent(r.nama)}%0AWA: ${r.wa}%0ASemester: ${r.semester}%0A%0ASkor: ${r.total}/${D.items.length} (${r.percent}%)%0ASimple: ${encodeURIComponent(r.simple)}%0ACompound: ${encodeURIComponent(r.compound)}%0APelanggaran integritas: ${r.violations}`;
     if (C.whatsappTarget) {
       $("#btnWa").href = `https://wa.me/${C.whatsappTarget}?text=${txt}`;
       $("#btnWa").classList.remove("hidden");
@@ -292,6 +291,10 @@
 
   /* ---------- locked screen if attempt exists ---------- */
   (function init() {
+    $("#qnForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      collectQuestionnaire();
+    });
     const wa = new URLSearchParams(location.search).get("wa");
     if (wa && localStorage.getItem("oktin_done_" + wa)) show("#scr-locked");
   })();

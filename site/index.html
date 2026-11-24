@@ -13,7 +13,7 @@
   <div class="card">
     <div class="badge">Section 1 · Listening Comprehension · Part A</div>
     <h1>TOEFL-Like Listening Comprehension</h1>
-    <p class="sub">Conversational Implicature — 30 Short Conversations<br>English Education Program, University of Mataram</p>
+    <p class="sub">Conversational Implicature — 35 Short Conversations<br>English Education Program, University of Mataram</p>
 
     <div class="rules">
       <h3>Test Rules</h3>
@@ -63,13 +63,13 @@
 <!-- ============ SCREEN: TEST ============ -->
 <section id="scr-test" class="screen">
   <div class="testbar">
-    <span id="tProgress">Soal 1/30</span>
+    <span id="tProgress">Soal 1/35</span>
     <span id="tTimer" class="timer">30s</span>
     <span id="tViol" class="viol" title="Tab switches detected">⚠ 0</span>
   </div>
   <div class="card test">
     <div class="stage" id="stage-play">
-      <div class="itemtag" id="itemTag">Complex · Implicature</div>
+      <div class="itemtag" id="itemTag">Simple · Implicature</div>
       <h2 id="itemNum">Number 1</h2>
       <p class="hint">🎧 Listen carefully. The audio will play <b>only once</b>.</p>
       <button class="btn primary big" id="btnPlay">▶ Play Audio</button>
@@ -84,16 +84,57 @@
 </section>
 
 <!-- ============ SCREEN: QUESTIONNAIRE ============ -->
-<section id="scr-quest" class="screen">
+<section id="scr-qn" class="screen">
   <div class="card">
     <div class="badge">Post-Test Questionnaire</div>
-    <h2>Persepsi Kesulitan</h2>
-    <p class="sub muted">Jawaban jujur membantu penelitian. Tidak mempengaruhi skor Anda.</p>
-    <form id="questForm">
-      <div id="likertWrap"></div>
-      <div id="mcWrap"></div>
-      <button type="submit" class="btn primary big">Kirim & Lihat Skor ✅</button>
-      <p id="questErr" class="err"></p>
+    <h2>Questionnaire</h2>
+    <p class="sub">Please answer honestly based on the test you just took. There are <b>no right or wrong answers</b>. Your answers are confidential and used for academic purposes only.</p>
+
+    <form id="qnForm" autocomplete="off">
+      <div class="qn-bg">
+        <h3>Background Information</h3>
+        <label>Your latest TOEFL score (<span class="muted">must be below 500 — research criterion</span>)
+          <input type="number" id="qnScore" min="310" max="677" placeholder="e.g. 450" required>
+        </label>
+        <label>TOEFL test type you took
+          <select id="qnType" required>
+            <option value="">— select —</option>
+            <option value="ITP / Paper-Based Test (PBT)">ITP / Paper-Based Test (PBT)</option>
+            <option value="iBT (Internet-Based Test)">iBT (Internet-Based Test)</option>
+            <option value="Never taken">Never taken</option>
+          </select>
+        </label>
+        <label>Section with your HIGHEST score
+          <select id="qnHigh" required>
+            <option value="">— select —</option>
+            <option value="Listening">Listening</option>
+            <option value="Structure & Written Expression">Structure &amp; Written Expression</option>
+            <option value="Reading">Reading</option>
+          </select>
+        </label>
+        <label>Section with your LOWEST score
+          <select id="qnLow" required>
+            <option value="">— select —</option>
+            <option value="Listening">Listening</option>
+            <option value="Structure & Written Expression">Structure &amp; Written Expression</option>
+            <option value="Reading">Reading</option>
+          </select>
+        </label>
+      </div>
+
+      <h3>Listening Difficulties</h3>
+      <p class="muted small">For each statement, choose <b>1</b> (Strongly disagree) to <b>5</b> (Strongly agree). All statements describe difficulties — agreeing means you felt that difficulty.</p>
+      <div id="qnLikert"></div>
+
+      <label>1. In your opinion, which sentence type is more difficult to understand the implied meaning of: simple sentences, compound sentences, or both? Please explain your reasons.
+        <textarea id="qnO1" rows="3" required></textarea>
+      </label>
+      <label>2. Please write any suggestions so that a TOEFL-Like Listening Part A test like this one becomes easier to understand.
+        <textarea id="qnO2" rows="3"></textarea>
+      </label>
+
+      <button type="submit" id="qnSubmit" class="btn primary big">Submit &amp; See Score</button>
+      <p id="qnErr" class="err"></p>
     </form>
   </div>
 </section>
@@ -103,14 +144,12 @@
   <div class="card">
     <h2>📊 Hasil Tes Anda</h2>
     <div class="score-hero">
-      <div class="score-big" id="scoreTotal">0/30</div>
+      <div class="score-big" id="scoreTotal">0/35</div>
       <div class="score-pct" id="scorePct">0%</div>
     </div>
     <div class="grid2">
       <div class="stat"><h4>Simple Sentences</h4><p id="stSimple">—</p></div>
-      <div class="stat"><h4>Complex Sentences</h4><p id="stComplex">—</p></div>
-      <div class="stat"><h4>Deixis Items</h4><p id="stDeixis">—</p></div>
-      <div class="stat"><h4>Reference Items</h4><p id="stRef">—</p></div>
+      <div class="stat"><h4>Compound Sentences</h4><p id="stCompound">—</p></div>
     </div>
     <div class="meta">
       <p><b>Nama:</b> <span id="rName"></span></p>
